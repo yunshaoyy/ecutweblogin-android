@@ -8,9 +8,11 @@ import android.net.http.SslError
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
@@ -27,6 +29,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
@@ -79,6 +82,13 @@ class MainActivity : AppCompatActivity() {
         setupButtons()
         setupWebView()
         restorePrefs()
+
+        // 返回键退出时彻底结束进程，避免 WebView / 网络连接残留在后台
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                exitApp()
+            }
+        })
 
         val restored = savedInstanceState?.let {
             username = it.getString("username", username) ?: username
@@ -406,10 +416,33 @@ class MainActivity : AppCompatActivity() {
         webView.saveState(outState)
     }
 
+    private var webViewDestroyed = false
+
+    private fun destroyWebView() {
+        if (webViewDestroyed) return
+        webViewDestroyed = true
+        try {
+            webView.stopLoading()
+            (webView.parent as? ViewGroup)?.removeView(webView)
+            webView.removeAllViews()
+            webView.destroy()
+        } catch (e: Exception) {
+            Log.w(TAG, "销毁 WebView 失败", e)
+        }
+    }
+
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
-        webView.stopLoading()
-        webView.destroy()
+        destroyWebView()
         super.onDestroy()
+    }
+
+    /** 返回键退出：清理 WebView 后直接杀掉本进程。 */
+    private fun exitApp() {
+        handler.removeCallbacksAndMessages(null)
+        destroyWebView()
+        finishAffinity()
+        Log.i(TAG, "back pressed -> kill process")
+        Process.killProcess(Process.myPid())
     }
 }
