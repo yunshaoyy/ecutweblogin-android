@@ -1,15 +1,44 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ---- Gradle ----
+.gradle/
+/build/
+*/build/
+!**/src/**/build/
 local.properties
+
+# ---- Kotlin / 编译缓存 ----
+.kotlin/
+
+# ---- 构建产物 & 签名包 ----
+/release/
+app/release/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.jks
+*.keystore
+!debug.keystore
+output-metadata.json
+baselineProfiles/
+
+# ---- Android Studio / IntelliJ ----
+*.iml
+/captures
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/shelf/
+
+# ---- NDK ----
+.externalNativeBuild/
+.cxx/
+
+# ---- 系统文件 ----
+.DS_Store
+Thumbs.db
